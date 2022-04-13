@@ -7,30 +7,14 @@ import (
 	"golang.cisco.com/accordion/a7nlibs/logging"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
-
-type CfgContext struct {
-	masterUrl, cfgPath, namespace, name *string
-}
-
-func CreatePodContext(masterUrl, cfgPath, namespace, name string) CfgContext {
-	return CfgContext{
-		masterUrl: &masterUrl,
-		cfgPath:   &cfgPath,
-		namespace: &namespace,
-		name:      &name,
-	}
-}
 
 func (podCtx *CfgContext) ListPods() []corev1.Pod {
 	var cfgPath string
 	var podLIst *corev1.PodList
-	var cfg *rest.Config = GetUserK8SConfig(podCtx)
-	var clientset, err = kubernetes.NewForConfig(cfg)
 	var ns string = ""
 
+	clientset, err := podCtx.GetClientForConfig()
 	if err != nil {
 		logging.ErrorLogger.Printf("Error !! Creating clientset for the config, %s.\n", cfgPath)
 		return nil
@@ -99,8 +83,7 @@ func ListPodNames(list []corev1.Pod) *[]string {
 }
 
 func (podCtx *CfgContext) CreatePodFromSpecObj(podSpeclObj *corev1.Pod) (*corev1.Pod, error) {
-	var cfg *rest.Config = GetUserK8SConfig(podCtx)
-	clientset, err := kubernetes.NewForConfig(cfg)
+	clientset, err := podCtx.GetClientForConfig()
 	if err != nil {
 		logging.ErrorLogger.Printf("Error !! Unable to create clientset for given kube config %s.\n", *podCtx.cfgPath)
 		panic(err.Error())
@@ -111,8 +94,7 @@ func (podCtx *CfgContext) CreatePodFromSpecObj(podSpeclObj *corev1.Pod) (*corev1
 }
 
 func (podCtx *CfgContext) GetPodStatus() (*corev1.Pod, error) {
-	var cfg *rest.Config = GetUserK8SConfig(podCtx)
-	clientset, err := kubernetes.NewForConfig(cfg)
+	clientset, err := podCtx.GetClientForConfig()
 	if err != nil {
 		logging.ErrorLogger.Printf("Error !! Unable to create clientset for given kube config %s.\n", *podCtx.cfgPath)
 		panic(err.Error())
