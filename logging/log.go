@@ -5,8 +5,17 @@ import (
 	"os"
 )
 
+func getLogParams(debug bool) *int {
+	var params int = 0
+	if debug {
+		params = log.Ldate | log.Ltime | log.Lshortfile
+	}
+	return &params
+}
+
 var (
-	InfoLogger    = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(os.Stderr, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger   = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Debug         = true
+	InfoLogger    = log.New(os.Stdout, "INFO: ", *getLogParams(Debug))
+	WarningLogger = log.New(os.Stderr, "WARNING: ", *getLogParams(Debug))
+	ErrorLogger   = log.New(os.Stderr, "ERROR: ", *getLogParams(Debug))
 )

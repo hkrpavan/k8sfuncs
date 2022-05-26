@@ -56,9 +56,8 @@ func (saCtx *CfgContext) ListSANames() ([]string, error) {
 	return saNames, nil
 }
 
-func (saCtx *CfgContext) GetServiceAccount(name *string) (*corev1.ServiceAccount, error) {
-	var sa *corev1.ServiceAccount
-	var ns string
+func (saCtx *CfgContext) GetServiceAccount() (*corev1.ServiceAccount, error) {
+	var ns string = ""
 	clientset, err := saCtx.GetClientForConfig()
 	if err != nil {
 		return nil, err
@@ -68,14 +67,13 @@ func (saCtx *CfgContext) GetServiceAccount(name *string) (*corev1.ServiceAccount
 		ns = *saCtx.namespace
 	}
 
-	sa, err = clientset.CoreV1().ServiceAccounts(ns).Get(context.TODO(), *name, metav1.GetOptions{})
-	return sa, err
+	return clientset.CoreV1().ServiceAccounts(ns).Get(context.TODO(), *saCtx.name, metav1.GetOptions{})
 }
 
 func (saCtx *CfgContext) GetServiceAccountSecrets(name *string) ([]string, error) {
 	var secrets []string = make([]string, 0)
 
-	sa, err := saCtx.GetServiceAccount(name)
+	sa, err := saCtx.GetServiceAccount()
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +98,7 @@ func (saCtx *CfgContext) CreateServiceAccount(name *string) (*corev1.ServiceAcco
 
 	sa.Name = *name
 
-	sa, err = clientset.CoreV1().ServiceAccounts(ns).Create(context.TODO(), sa, metav1.CreateOptions{})
-	return sa, err
+	return clientset.CoreV1().ServiceAccounts(ns).Create(context.TODO(), sa, metav1.CreateOptions{})
 }
 
 func (saCtx *CfgContext) CreateSAFromObj(sa *corev1.ServiceAccount) (*corev1.ServiceAccount, error) {
@@ -115,8 +112,7 @@ func (saCtx *CfgContext) CreateSAFromObj(sa *corev1.ServiceAccount) (*corev1.Ser
 		ns = *saCtx.namespace
 	}
 
-	sa, err = clientset.CoreV1().ServiceAccounts(ns).Create(context.TODO(), sa, metav1.CreateOptions{})
-	return sa, err
+	return clientset.CoreV1().ServiceAccounts(ns).Create(context.TODO(), sa, metav1.CreateOptions{})
 }
 
 func (saCtx *CfgContext) CreateSAFromYaml(yamlPath string) (*corev1.ServiceAccount, error) {
